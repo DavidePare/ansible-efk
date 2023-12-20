@@ -18,9 +18,11 @@ reserved_port: port reserved to fluentd
 elastic_virtual_proto: if https enabled
 
 logstash_format: if the logs will be send using the logstash format
+
 elasticsearch_port: elasitsearch port to send data
 
 elasticsearch_fluentd_account_user: fluentd user to send data to elasticsearch node
+
 elasticsearch_fluentd_account_password: fluentd passwotd to send data to elasticsearch node
 
 

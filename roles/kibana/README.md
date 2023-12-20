@@ -24,17 +24,23 @@ dns_name: name of dns
 
 ### Settings
 kibana_https_enabled: if kibana https xpack is enabled
+
 kibana_old_space_mb: size of kibana old space mb, use 1024 such as default 
+
 kibana_install_mode: https 
 
 elasticsearch_security_enabled: if elasticsearch xpack is enabled
+
 elasticsearch_https_enabled: if elasticsearch https is enabled
+
 elasticsearch_username: kibana_system username
+
 elasticsearch_password: password used in elasticsearch config
 
 path_elastic: elasticsearch path
 
 elastic_stack_ca: same file of elasticsearch
+
 elastic_stack_ca_password: password used in elasticsearch config
 
 Dependencies

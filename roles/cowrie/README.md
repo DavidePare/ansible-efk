@@ -12,13 +12,17 @@ Role Variables
 --------------
 
 cowrie_user: cowrie # IMPORTANT: Don t change it. 
+
 github_cowrie: http://github.com/cowrie/cowrie # link to download the honeypot
+
 name_virtualenv: name of the environment
+
 path_to_virtualenv: virtual-environment path
 
 new_ssh_port: port to move the real ssh port 
 
 cowrie_ssh: true or false if you are monitoring the ssh port
+
 cowrie_telnet: true or false if you are monitoring the telnet port
 
 Dependencies

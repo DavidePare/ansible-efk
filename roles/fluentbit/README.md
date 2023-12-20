@@ -13,6 +13,7 @@ Role Variables
 fluentbit_path_conf: path fluentbit
 
 path_log: path where retrieve the logs
+
 fluentd_port: port to send the log
 
 type_parsing: format such as json
