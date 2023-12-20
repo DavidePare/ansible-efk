@@ -1,0 +1,29 @@
+#[SERVICE]
+#    Flush         5
+#    Daemon        Off
+#    Log_Level     info
+#    Parsers_File  parsers.conf
+#    Storage.Metrics on
+
+[SERVICE]
+    Flush         1
+    Daemon        Off
+    Log_Level     info
+    Parsers_File  parsers.conf
+    http_server  Off
+    http_listen  0.0.0.0
+    http_port    2020
+    storage.metrics on
+
+[INPUT]
+    Name         tail
+    Path         {{path_log}}
+    Parser      {{type_parsing}}
+
+
+[OUTPUT]
+    Name         http
+    Match        *
+    Host         {{ groups['fluentd'] | random }}
+    Port         {{fluentd_port}}
+

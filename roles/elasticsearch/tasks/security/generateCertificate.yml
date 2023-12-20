@@ -1,0 +1,134 @@
+---
+### Tasks to create the certificate elastic-certificates.p12 (Communication between the elasticsearch hosts)
+### https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup.html
+- name: Get number of hosts in elasticsearch_ca group
+  set_fact:
+    elasticsearchCertificateHost: "{{ groups['elasticsearch_ca'] | length }}"
+    
+- name: Interrupt playbook if no hosts in elasticsearch_ca group
+  ansible.builtin.meta: end_play
+  when: elasticsearchCertificateHost == 0
+
+- name: CA exists
+  ansible.builtin.stat:
+    path : "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+  register: file_data
+
+- name: elastic Print
+  ansible.builtin.debug:
+    var: file_data.stat.exists
+  when: inventory_hostname in groups['elasticsearch_ca']
+
+- block:
+
+    ### Task to generate the file 
+    - name: Generate the elastic-stack-ca.p12
+      ansible.builtin.shell: 
+          echo '{{ ca_certificate_name }}\n{{ ca_certificate_password }}\n'| {{executable_path}}/elasticsearch-certutil ca
+      register: ca_generation_result
+
+    - name: Display CA generation result
+      ansible.builtin.debug:
+        var: ca_generation_result.stdout
+      tags: debug
+    
+    ### Give in input directly all the response to the questions 
+    - name: Generate the file elastic-certificates.p12 
+      ansible.builtin.shell: 
+          echo "{{ca_certificate_password}}\n{{elasticsearch_certificates}}\n{{elastic_certificates_password}}\n" | {{executable_path}}/elasticsearch-certutil cert --ca {{ ca_certificate_name }}
+      register: result
+    ###  openssl pkcs12 -info -in /path/to/file.p12 -password pass:{{elastic_certificates_password}} and then {{ca_certificate_password}} to check if it correctly created the file
+
+    - name: Display elastic-certificate generation result
+      ansible.builtin.debug:
+        var: result.stdout
+      
+
+    - name: Move file elastic-certificates.p12 in certs
+      ansible.builtin.file:
+        src: "{{home_path}}/{{elasticsearch_certificates}}"
+        dest: "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+        state: hard
+
+    - name: Move file elastic-stack-ca.p12 in certs
+      ansible.builtin.file:
+        src: "{{home_path}}/{{ca_certificate_name}}"
+        dest: "{{elasticsearch_certs_dir}}/{{ca_certificate_name}}"
+        state: hard
+    
+    - name: Remove original elastic-certificates.p12 from the old path 
+      ansible.builtin.file:
+        path: "{{home_path}}/{{elasticsearch_certificates}}"
+        state: absent
+    
+    - name: Remove original elastic-stack-ca.p12  from the old path 
+      ansible.builtin.file:
+        path: "{{home_path}}/{{ca_certificate_name}}"
+        state: absent
+      
+  when: 
+    - not file_data.stat.exists
+    - inventory_hostname in groups['elasticsearch_ca']
+
+- block: 
+  - name: Copy the file elastic-certificates.p12 in each node
+    ansible.builtin.copy:
+      src: "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+      dest: "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+      remote_src: true
+    delegate_to: "{{ groups['elasticsearch_ca'] | random }}"
+    when: 
+      - inventory_hostname in groups['nodes']
+      - inventory_hostname not in groups['elasticsearch_ca']
+    register: copy_result
+
+  - name: Print copy result
+    ansible.builtin.debug:
+      var: copy_result
+
+  ### In case the remote host does not have the access to copy the file directly it can copy it locally and then from local to the remote host
+  - block:
+
+      - name: Fetch elasticsearch_certificates from remote host
+        ansible.builtin.fetch:
+          src: "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+          dest: "~/{{elasticsearch_certificates}}"
+          flat: yes
+        delegate_to: "{{ groups['elasticsearch_ca'] | random }}"
+        when: inventory_hostname in groups['elasticsearch_ca']
+
+      - name: Copy elasticsearch_certificates from local to all the hosts in node
+        ansible.builtin.copy:
+          src: "~/{{elasticsearch_certificates}}"
+          dest:  "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+        with_items: "{{ groups['nodes'] }}"
+        when:
+          - not file_data.stat.exists
+
+      - name: Fetch elastic-stack-ca.p12 from remote host
+        ansible.builtin.fetch:
+          src: "{{elasticsearch_certs_dir}}/{{ca_certificate_name}}"
+          dest: "~/{{ca_certificate_name}}"
+          flat: yes
+        delegate_to: "{{ groups['elasticsearch_ca'] | random }}"
+        when: inventory_hostname in groups['elasticsearch_ca']
+
+      - name: Copy elastic-stack-ca.p12 from local to all the hosts in node
+        ansible.builtin.copy:
+          src: "~/{{ca_certificate_name}}"
+          dest:  "{{elasticsearch_certs_dir}}/{{ca_certificate_name}}"
+        with_items: "{{ groups['nodes'] }}"
+        when:
+          - not file_data.stat.exists
+
+    when: copy_result.changed== False
+
+    
+  - name: Fix file elastic permission
+    ansible.builtin.file:
+      path: "{{elasticsearch_certs_dir}}/{{elasticsearch_certificates}}"
+      owner: "{{ elasticsearch_user }}"
+      group: "{{ elasticsearch_group }}"
+      mode: u=rwX,g=rX,o-rwx
+  when:
+    - not file_data.stat.exists

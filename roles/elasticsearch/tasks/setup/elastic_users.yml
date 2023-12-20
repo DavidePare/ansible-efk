@@ -1,0 +1,58 @@
+---
+
+- set_fact:
+    virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
+
+- name: Setup ELK users
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.username }}/_password"
+    user: elastic
+    password: "{{ bootstrap_pass }}"
+    method: POST
+    body: {"password" : "{{ item.password }}"} 
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  with_items: "{{ elasticsearch_users }}"
+  #no_log: true
+  run_once: true
+
+
+
+- name: Modify roles.yml
+  template:
+    src: roles.yml
+    dest: "{{ elasticsearch_conf_dir}}/roles.yml"
+    owner: "{{elasticsearch_user}}"
+    group: "{{elasticsearch_group}}"
+    mode: 0644
+
+- name: Create the Fluentd role
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/role/{{fluentd_role}}"
+    user: elastic
+    password: "{{ bootstrap_pass }}"
+    method: POST
+    body: {  "cluster": ["monitor", "manage", "all"], "indices": [{ "names": ["*"], "privileges": ["create_doc", "create", "delete", "index", "write", "all"]}]}
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  #no_log: true
+  run_once: true
+
+- name: Create the Fluentd user
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ fluentd_user }}"
+    user: elastic
+    password: "{{ bootstrap_pass }}"
+    method: POST
+    body: {"password" : "{{ fluentd_password}}", "roles" :['{{ fluentd_role }}']} 
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  #no_log: true
+  run_once: true
+

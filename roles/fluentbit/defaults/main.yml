@@ -1,0 +1,20 @@
+---
+# defaults file for fluentbit
+
+###Installation
+gpg_key: https://packages.fluentbit.io/fluentbit.key
+
+fluent_bit_repo: https://packages.fluentbit.io/ubuntu/
+
+##https://wiki.ubuntu.com/Releases
+ubuntu22: jammy 
+ubuntu20: focal 
+
+output: elasticsearch
+elasticsearch_port: 9200
+fluentbit_path_conf: /etc/fluent-bit
+
+path_log: /home/cowrie/cowrie/var/log/cowrie/cowrie.json
+fluentd_port: 9880
+
+type_parsing: json

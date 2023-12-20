@@ -1,0 +1,19 @@
+N
+y
+{{ elasticsearch_certs_dir }}/{{ ca_certificate_name }}
+{{ ca_certificate_password }}
+5y
+N
+{{ hostvars[inventory_hostname]['label'] | default(hostvars[inventory_hostname]['inventory_hostname_short']) }}
+localhost
+
+Y
+{{ hostvars[inventory_hostname]['privateIP'] }}
+127.0.0.1
+
+Y
+N
+{{ elasticsearch_http_password }}
+{{ elasticsearch_http_password }}
+{{ elasticsearch_http_file }}
+

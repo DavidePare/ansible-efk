@@ -1,0 +1,88 @@
+
+- name: Update package lists
+  apt:
+    update_cache: yes
+
+- name: Upgrade packages
+  apt:
+    upgrade: yes
+    autoremove: yes  # Optionally remove unused packages
+    autoclean: yes 
+
+
+- name: Installing from chrony
+  apt:
+    name: chrony
+    update_cache: yes
+
+- name: enable and start chrony
+  ansible.builtin.systemd:
+    name: chrony 
+    state: started 
+    enabled: yes
+
+
+- name: Replace default chrony.conf
+  template:
+    src: chrony.conf.j2
+    dest: "{{chrony_path}}chrony.conf"
+
+
+- name: Replace default limits.conf
+  template:
+    src: limits.conf.j2
+    dest: "{{limit_path}}limits.conf"
+
+- name: Replace default sysctl.conf
+  template:
+    src: sysctl.conf.j2
+    dest: "{{etc_path}}sysctl.conf"
+
+- name : Reboot systctl
+  ansible.builtin.shell:
+    sysctl -p
+
+
+- name: Download file for Bullseye
+  debug: 
+    msg: "not adapt."
+
+- name: Download file for Bullseye
+  ansible.builtin.get_url:
+    url: "{{fluentd_url_debian_bullseye}}"
+    dest: /tmp/fluend.sh
+    mode: '0755'
+  when: ansible_distribution_release == "bullseye"
+
+- name: Download file for Bookworm
+  ansible.builtin.get_url:
+    url: "{{fluentd_url_debian_bookworm}}"
+    dest: /tmp/fluend.sh
+    mode: '0755'
+  when: ansible_distribution_release == "bookworm"
+
+- name: Download file for Jammy
+  ansible.builtin.get_url:
+    url: "{{fluentd_url_ubuntu_jammy}}"
+    dest: /tmp/fluend.sh
+    mode: '0755'
+  when: ansible_distribution_release == "jammy"
+
+- name: Download file for Focal
+  ansible.builtin.get_url:
+    url: "{{fluentd_url_ubuntu_focal}}"
+    dest: /tmp/fluend.sh
+    mode: '0755'
+  when: ansible_distribution_release == "focal"
+
+
+
+- name: execute fluend.sh
+  ansible.builtin.shell:
+    /tmp/fluend.sh
+
+
+- name: Remove Fluentd script
+  ansible.builtin.file:
+    path: /tmp/fluentd.sh
+    state: absent

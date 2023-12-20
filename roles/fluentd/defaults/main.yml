@@ -1,0 +1,43 @@
+---
+# defaults file for fluentd
+
+chrony_server: server metadata.google.internal prefer iburst
+
+nofile_limit: 65536
+
+reserved_port: 24224
+
+chrony_path: /etc/chrony/
+
+limit_path: /etc/security/
+
+etc_path : /etc/
+
+fluentd_url_ubuntu_jammy: https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh
+
+fluentd_url_ubuntu_focal: https://toolbelt.treasuredata.com/sh/install-ubuntu-focal-fluent-package5-lts.sh
+
+fluentd_url_debian_bullseye: https://toolbelt.treasuredata.com/sh/install-debian-bullseye-fluent-package5-lts.sh 
+
+fluentd_url_debian_bookworm: https://toolbelt.treasuredata.com/sh/install-debian-bookworm-fluent-package5-lts.sh
+
+
+elastic_virtual_proto: https
+
+logstash_format: true
+elasticsearch_port: 9200
+
+elasticsearch_fluentd_account_user: fluentd
+elasticsearch_fluentd_account_password: changemepasswordfluendsameoftheoneusedinelasticsearch
+
+
+
+fluentd_config_path: /etc/fluent/
+
+listen_port: 9880
+
+elasticsearch_https_enabled: true
+
+use_ipv6: false
+
+

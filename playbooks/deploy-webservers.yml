@@ -1,0 +1,8 @@
+---
+# Deploy apache webservers in the nodes machine
+
+
+- hosts: nodes
+  become: true
+  roles: 
+    - ../roles/webservers

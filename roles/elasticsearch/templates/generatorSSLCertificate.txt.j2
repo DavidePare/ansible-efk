@@ -1,0 +1,17 @@
+email@test.com
+Y
+N
+thesis-master-geneator.duckdns.org
+
+2
+
+
+
+certbot certonly --standalone --non-interactive --domains thesis-master-geneator.duckdns.org
+cp /etc/letsencrypt/live/thesis-master-geneator.duckdns.org/fullchain.pem /etc/elasticsearch/certs/fullchain.pem
+cp /etc/letsencrypt/live/thesis-master-geneator.duckdns.org/privkey.pem /etc/elasticsearch/certs/privkey.pem
+
+permission change
+
+
+for the other machine start before the service ngix on the first machine

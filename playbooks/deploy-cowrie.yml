@@ -1,0 +1,13 @@
+- hosts: monitoring
+  become: true
+  vars_files: 
+  - ../vars/credentials.yml
+  roles: 
+    - ../roles/cowrie
+
+- hosts: fluentbit
+  become: true
+  vars_files: 
+  - ../vars/credentials.yml
+  roles:    
+    - ../roles/fluentbit

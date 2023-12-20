@@ -1,0 +1,6 @@
+- hosts: nodes #modify with elk at the end
+  become: true
+  vars_files: 
+  - ../vars/credentials.yml
+  roles: 
+    - ../roles/snort

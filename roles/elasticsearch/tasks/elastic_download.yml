@@ -1,0 +1,39 @@
+---
+### The playbook that follows install the necessary package for download and install elasticsearch.
+- name: Install utils
+  ansible.builtin.package:
+    name: 
+      - jq
+      - unzip
+    state: present
+    update_cache: yes  
+
+- name: Check if elasticsearch is installed
+  ansible.builtin.stat:
+      path: /usr/share/elasticsearch/bin
+  register: elasticsearch_status
+  
+- block:
+  - name: Add elasticsearch public signing key 
+    apt_key:
+      url: "{{ elastic_psk_url }}"
+    
+  - name: Installing from the APT repository
+    apt:
+      name: apt-transport-https
+      update_cache: yes
+
+  - name: Add elasticsearch public signing key 
+    apt_repository:
+      repo: deb {{ elastic_repo }} stable main
+      state: present
+
+  - name: Update system
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: Install Elasticsearch
+    ansible.builtin.apt:
+        name: elasticsearch
+        state: present
+  when: not elasticsearch_status.stat.exists

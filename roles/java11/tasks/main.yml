@@ -1,0 +1,24 @@
+---
+# tasks file for java11
+
+
+
+
+- name: Install Packages
+  apt:
+    pkg:
+      - openjdk-11-jdk
+      - net-tools
+    state: latest
+    update_cache: true
+  register: lsresult
+  until: "lsresult is not failed"
+  retries: 10
+  delay: 10
+    
+- name: Set JAVA_HOME
+  lineinfile:
+      dest: /etc/environment
+      line: 'JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"'
+      state: present
+      create: yes

@@ -1,0 +1,81 @@
+
+
+- name: add cowrie user
+  ansible.builtin.user:
+    name: "{{ cowrie_user }}"
+    shell: /bin/bash
+    password: "*"
+
+#sudo apt-get install git python3-virtualenv libssl-dev libffi-dev build-essential libpython3-dev python3-minimal authbind virtualenv
+
+- name: Install utils
+  ansible.builtin.package:
+    name: 
+      - git
+      - python3-minimal
+      - libpython3-dev
+      - virtualenv
+      - python3-virtualenv
+      - python3.10-venv
+      - libssl-dev
+      - libffi-dev
+      - build-essential
+      - authbind
+    state: present
+    update_cache: yes  
+
+- name: Clone a github repository
+  ansible.builtin.git:
+    repo: '{{github_cowrie}}'
+    dest: /home/{{cowrie_user}}/cowrie
+    clone: yes
+    update: yes
+
+
+- name: Set ownership and permissions for the directory
+  ansible.builtin.file:
+    recurse: yes
+    path: '/home/{{ cowrie_user }}/'
+    owner: '{{ cowrie_user }}'
+    mode: u=rwX,g=rX,o-rwx ## TODO Fix permission later u=rwX,g=rX,o-rwx
+
+
+- name: Manually create the initial virtualenv
+  ansible.builtin.shell:
+    cmd: python3 -m venv {{ path_to_virtualenv }} 
+    creates: "{{ path_to_virtualenv }}"
+  become_user: '{{cowrie_user}}'
+
+
+
+- name: Install setuptools into venv
+  ansible.builtin.pip:
+    requirements: /home/{{cowrie_user}}/cowrie/requirements.txt
+    virtualenv: '{{ path_to_virtualenv }}'
+  become_user: '{{cowrie_user}}'
+
+
+- name: Change SSH port configuration
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port\s'
+    line: 'Port {{ new_ssh_port }}'
+    state: present
+
+- name: Restart SSHD service
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+
+- name: Restart SSH service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+
+
+- name: Install Authbind
+  ansible.builtin.package:
+    name: 
+      - authbind
+    state: present
+    update_cache: yes  

@@ -1,0 +1,37 @@
+---
+# tasks file for fluentd
+
+- name: debug
+  debug: msg="{% for i in groups['nodes'] %}{{ hostvars[i].inventory_hostname }}{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: deb3
+  debug: msg="{{ ansible_all_ipv6_addresses }}"
+
+
+
+- name: Execute to fluend_host
+  block:
+  - include_tasks: 
+      file: pre-installation.yml
+      apply:
+        tags: fluentd
+    tags: fluentd
+
+
+  - name: Install elasticsearch gem
+    ansible.builtin.shell:
+      fluent-gem install fluent-plugin-elasticsearch
+    
+
+
+  - name: Replace default fluentd.conf
+    template:
+      src: fluentd.conf.j2
+      dest: "{{fluentd_config_path}}fluentd.conf"
+  
+  - name: enable and start fluentd
+    ansible.builtin.systemd:
+      name: fluentd.service 
+      state: restarted 
+      enabled: yes
+  when: "'fluentd' in group_names"

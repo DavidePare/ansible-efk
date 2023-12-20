@@ -1,0 +1,9 @@
+---
+# tasks file for fluentbit
+
+- name: install Fluentbit
+  include_tasks: install_fluentbit.yml
+
+
+- name: Set the config file
+  include_tasks: configure.yml

@@ -1,0 +1,8 @@
+role_fluentd:
+  cluster:
+    - CLUSTER_MONITOR  
+    - CLUSTER_COMPOSITE_OPS_RO
+  indices:
+    'fluentd-*':
+      '*':
+        - UNLIMITED

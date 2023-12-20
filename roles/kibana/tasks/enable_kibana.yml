@@ -1,0 +1,35 @@
+---
+- set_fact:
+    kibana_virtual_proto: "{{ 'https' if kibana_https_enabled else 'http' }}"
+
+
+- set_fact:
+    kibana_ip: "{{ inventory_hostname }}"
+
+- name: debug
+  debug:
+    var: kibana_ip
+
+- name: enable and start kibana
+  ansible.builtin.systemd:
+    name: kibana 
+    state: started 
+    enabled: yes
+
+- name: wait kibana to be ready
+  ansible.builtin.uri:
+    url: "{{kibana_virtual_proto}}://{{kibana_ip}}:5601"
+    status_code: 200
+    follow_redirects: safe
+    validate_certs: no
+  register: result
+  notify: Print Result
+  until: result.status == 200
+  delay: 20
+
+- name: Print Result
+  debug:
+    var: result
+  changed_when: false
+  run_once: true
+

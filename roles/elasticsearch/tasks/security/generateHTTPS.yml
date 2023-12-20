@@ -1,0 +1,57 @@
+---
+### https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html#encrypt-kibana-browser
+
+
+- name: generate HTTPS answer file
+  ansible.builtin.template:
+    src: https_answer_file.txt.j2
+    dest: /tmp/https_answer_file.txt
+    mode: 0400
+
+- name: run shell to generate the certificate
+  ansible.builtin.shell: |
+    cat /tmp/https_answer_file.txt | {{executable_path}}/elasticsearch-certutil http
+  register: https_generateZIP
+
+- name: Display the result from the generation of the https-zip
+  ansible.builtin.debug:
+    var: https_generateZIP.stdout
+  tags: debug
+
+- name: Unarchive HTTPS zip file
+  ansible.builtin.unarchive:
+    src: "{{ elasticsearch_http_file }}"
+    dest: /tmp/
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    remote_src: true
+
+- name: Move the file http.p12 from /tmp/elasticsearch in certificate the directory 
+  ansible.builtin.copy:
+    src: /tmp/elasticsearch/{{http_file_security}}
+    dest: "{{elasticsearch_certs_dir}}/{{http_file_security}}"
+    remote_src: true
+
+- name: Move the file elasticsearch_ca.pem from /tmp/kibana in certificate the directory 
+  ansible.builtin.copy:
+    src: /tmp/kibana/{{elasticsearch_ca_pem}}
+    dest: "{{elasticsearch_certs_dir}}/{{elasticsearch_ca_pem}}"
+    remote_src: true
+
+
+##Clean Up
+- name: Remove the directory /tmp/elasticsearch/ all the file inside
+  ansible.builtin.file:
+    path: /tmp/elasticsearch/
+    state: absent
+
+- name: Remove the directory /tmp/kibana/ all the file inside
+  ansible.builtin.file:
+    path: /tmp/kibana/
+    state: absent
+
+- name: Remove the file https_answer_file
+  ansible.builtin.file:
+    path: /tmp/https_answer_file.txt
+    state: absent
+

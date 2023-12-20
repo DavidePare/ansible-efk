@@ -1,0 +1,21 @@
+- name: Replace default fluent-bit.conf
+  template:
+    src: fluent-bit.conf.j2
+    dest: "{{fluentbit_path_conf}}/fluent-bit.conf"
+    
+- name: Replace default parser.conf
+  template:
+    src: parsers.conf.j2
+    dest: "{{fluentbit_path_conf}}/parsers.conf"
+    
+- name: Replace default plugins.conf
+  template:
+    src: plugins.conf.j2
+    dest: "{{fluentbit_path_conf}}/plugins.conf"
+
+
+- name: Start service fluent-bit
+  service: 
+    name: fluent-bit.service
+    state: started
+    enabled: yes

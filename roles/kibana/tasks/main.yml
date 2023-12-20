@@ -1,0 +1,21 @@
+---
+# tasks file for kibana
+
+- include_tasks: 
+    file: install_kibana.yml
+    apply:
+      tags: kibana
+  tags: kibana
+
+- include_tasks: 
+    file: encrypt_browser.yml
+    apply:
+      tags: kibana
+  tags: kibana
+  when: ssl_enabled
+
+- include_tasks: 
+    file: enable_kibana.yml
+    apply:
+      tags: kibana
+  tags: kibana

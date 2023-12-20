@@ -1,0 +1,4 @@
+- hosts: kibana
+  become: true
+  roles: 
+    - ../roles/kibana

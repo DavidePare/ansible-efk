@@ -1,0 +1,93 @@
+---
+### These task will follow the https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html
+### The DNS is generated with duckDNS 
+
+
+- name: Generate a server certificate and private key for Kibana
+  ansible.builtin.shell: |
+    echo "\n" | {{path_elastic}}/bin/elasticsearch-certutil csr -name {{certificate_ssl_name}} -dns {{dns_name}}
+  when: dns_enable
+
+- name: Generate a server certificate and private key for Kibana
+  ansible.builtin.shell: |
+    echo "\n" | {{path_elastic}}/bin/elasticsearch-certutil csr -name {{certificate_ssl_name}} 
+  when: not dns_enable
+
+- name: Unarchive csr-bundle.zip zip file
+  ansible.builtin.unarchive:
+    src: "{{ path_elastic }}/csr-bundle.zip"
+    dest: /tmp/
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    remote_src: true
+
+
+
+- name: Move the file key in the right position
+  ansible.builtin.copy:
+    src: /tmp/{{certificate_ssl_name}}/{{certificate_ssl_name}}.csr
+    dest: "{{kibana_certs_dir}}/{{certificate_ssl_name}}.csr"
+    remote_src: true
+
+### Fix 
+- name: Copy elastic CA
+  ansible.builtin.copy:
+    src: "{{ elastic_certs_path }}/{{ elastic_stack_ca }}"
+    dest: "{{ kibana_certs_dir }}/{{ elastic_stack_ca }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: 0644
+    remote_src: yes
+  when: 
+    - elasticsearch_https_enabled
+  vars:
+    path_file: "{{ elastic_certs_path if isElasticHost else elasticsearch_local_certs_dir }}"
+    flag:  "{{'yes' if isElasticHost else 'no'}}"
+
+- name: Generate a server certificate and private key for Kibana
+  ansible.builtin.shell: |
+    echo "{{elastic_stack_ca_password}}\n\n" | {{path_elastic}}/bin/elasticsearch-certutil cert --pem -ca {{kibana_certs_dir}}/{{elastic_stack_ca}} -name {{certificate_ssl_name}} 
+
+
+- name: Remove old crt
+  ansible.builtin.file:
+    path: "/tmp/{{certificate_ssl_name}}/{{certificate_ssl_name}}.key"
+    state: absent
+
+- name: Unarchive certificate-bundle.zip zip file
+  ansible.builtin.unarchive:
+    src: "{{ path_elastic }}/certificate-bundle.zip"
+    dest: /tmp/
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    remote_src: true
+
+
+- name: Move the file key in the right position
+  ansible.builtin.copy:
+    src: /tmp/{{certificate_ssl_name}}/{{certificate_ssl_name}}.crt
+    dest: "{{kibana_certs_dir}}/{{certificate_ssl_name}}.crt"
+    remote_src: true
+
+- name: Move the file csr in the right position
+  ansible.builtin.copy:
+    src: /tmp/{{certificate_ssl_name}}/{{certificate_ssl_name}}.key
+    dest: "{{kibana_certs_dir}}/{{certificate_ssl_name}}.key"
+    remote_src: true
+
+###Clean Up
+- name: Remove the directory csr-bundle.zip 
+  ansible.builtin.file:
+    path: "{{ path_elastic }}/csr-bundle.zip"
+    state: absent
+
+- name: Remove the directory certificate-bundle.zip
+  ansible.builtin.file:
+    path: "{{ path_elastic }}/certificate-bundle.zip"
+    state: absent
+
+- name: Remove the directory /tmp/kibana/ all the file inside
+  ansible.builtin.file:
+    path: /tmp/kibana-server/
+    state: absent
+

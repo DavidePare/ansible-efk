@@ -1,0 +1,44 @@
+---
+# defaults file for kibana
+
+kibana_group: kibana
+kibana_user: kibana
+kibana_path: /usr/share
+kibana_version: 8.8.2
+
+## This file is generated in the elasticsearch notebook
+elastic_certs_path: /etc/elasticsearch/certs 
+elasticsearch_ca_name: elasticsearch-ca.pem
+
+### Path in case the node does not have the elasticsearch locally.
+elasticsearch_local_certs_dir: ~/
+
+### Useful paths
+kibana_certs_dir: /etc/kibana/certs
+kibana_conf_dir: /etc/kibana
+kibana_log_dir: /var/log/kibana
+kibana_pid_dir: /var/run/kibana
+kibana_data_dir: /kibana
+
+### SSL 
+ssl_enabled: yes
+certificate_ssl_name: kibana-server
+dns_enable: no
+dns_name: pippoplutotopolino.duckdns.org
+
+### Settings
+kibana_https_enabled: yes
+kibana_old_space_mb: 1024
+kibana_install_mode: https # local
+
+### Elasticsearch Information
+elasticsearch_security_enabled: yes
+elasticsearch_https_enabled: yes
+elasticsearch_username: kibana_system
+elasticsearch_password: changemesameoftheoneinelasticsearch
+
+elasticsearch_hosts: host in groups['nodes']
+path_elastic: /usr/share/elasticsearch
+
+elastic_stack_ca: elastic-stack-ca.p12
+elastic_stack_ca_password: changemesameoftheoneinelasticsearch

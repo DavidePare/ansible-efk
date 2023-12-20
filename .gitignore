@@ -1,0 +1,7 @@
+.vscode
+roles/elasticsearch/defaults/mainUsed.yml
+inventory/hostsUsed.ini
+roles/logstash
+roles/webservers
+roles/snort
+.DS_Store

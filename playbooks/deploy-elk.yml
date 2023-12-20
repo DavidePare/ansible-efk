@@ -1,0 +1,40 @@
+---
+# Deploy elk 
+
+#
+- hosts: elasticsearch_ca,nodes #modify with elk at the end
+  become: true
+  #vars_files: 
+  #- ../vars/credentials.yml
+  roles: 
+    - ../roles/java11
+    - ../roles/elasticsearch
+   
+
+- hosts: kibana
+  become: true
+  #vars_files: 
+  #- ../vars/credentials.yml
+  roles: 
+    - ../roles/kibana
+
+- hosts: fluentd
+  become: true
+  #vars_files: 
+  #- ../vars/credentials.yml
+  roles: 
+    - ../roles/fluentd
+
+- hosts: monitoring
+  become: true
+  #vars_files: 
+  #- ../vars/credentials.yml
+  roles: 
+    - ../roles/cowrie
+
+- hosts: fluentbit
+  become: true
+  #vars_files: 
+  #- ../vars/credentials.yml
+  roles:    
+    - ../roles/fluentbit

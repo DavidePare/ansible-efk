@@ -1,0 +1,13 @@
+## Playbook to create the elastic user 
+---
+- name: add elk group 
+  ansible.builtin.group:
+    name: "{{ elasticsearch_group }}"
+    state: present
+
+- name: add elk user
+  ansible.builtin.user:
+    name: "{{ elasticsearch_user }}"
+    shell: /bin/sh
+    password: "*"
+    group: "{{ elasticsearch_group }}"

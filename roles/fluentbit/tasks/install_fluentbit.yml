@@ -1,0 +1,27 @@
+---
+### Installation of fluentbit following 
+- name: Installing from the APT repository
+  apt:
+    name: apt-transport-https
+    update_cache: yes
+
+- name: Key of fluentbit
+  apt_key:
+    url: "{{ gpg_key }}"
+
+- name: Add fluentbit public signing key 
+  apt_repository:
+    repo: deb "{{fluent_bit_repo}}{{ubuntu22}}" "{{ubuntu22}}" main
+    state: present
+
+- name: Update system
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Fluentbit
+  ansible.builtin.apt:
+    name: fluent-bit
+    state: present
+    
+
+    

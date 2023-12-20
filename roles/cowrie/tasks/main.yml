@@ -1,0 +1,79 @@
+---
+# tasks file for cowrie
+
+
+- name: Check if the user "cowrie" exists
+  ansible.builtin.stat:
+      path: "{{ cowrie_path }}"
+  register: path_info
+
+- include_tasks:
+    file: setup.yml
+  when: not path_info.stat.exists
+
+
+- name: Install Authbind
+  ansible.builtin.package:
+    name: 
+      - authbind
+    state: present
+    update_cache: yes  
+
+- name: Give permission to python3
+  ansible.builtin.shell: setcap cap_net_bind_service=+ep $(readlink -f $(which python3))
+  register: result
+
+- name: Print result
+  debug: 
+    var: result
+
+- name: Create /etc/authbind/byport/22
+  file:
+      path: "{{ssh_authbind_port}}"
+      state: touch
+      mode: 770
+      owner: "{{cowrie_user}}"
+      group: "{{cowrie_user}}"
+  when: cowrie_ssh 
+
+- name: Create /etc/authbind/byport/23
+  file:
+      path: "{{telnet_authbind_port}}"
+      state: touch
+      mode: 770
+      owner: "{{cowrie_user}}"
+      group: "{{cowrie_user}}"
+  when: cowrie_telnet 
+
+- name: Create Authbind environment variable
+  ansible.builtin.shell: export AUTHBIND_ENABLED=true
+  environment:
+    AUTHBIND_ENABLED: "true"
+
+- name: Move template cowrie.cfg
+  template:
+    src: cowrie.cfg.j2
+    dest: "{{cowrie_path}}/cowrie/etc/cowrie.cfg"
+    owner: "{{cowrie_user}}"
+    group: "{{cowrie_user}}"
+    mode: 0644
+
+- name: Move execute file 
+  template:
+    src: script.sh.j2
+    dest: /tmp/script.sh
+    owner: "{{cowrie_user}}"
+    group: "{{cowrie_user}}"
+    mode: 0755
+
+
+- name: Execute cowrite
+  ansible.builtin.shell: 
+    sh /tmp/script.sh
+  become_user: cowrie
+  register: result
+
+- name: Print result
+  debug: 
+    var: result
+

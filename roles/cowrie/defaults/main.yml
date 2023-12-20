@@ -1,0 +1,17 @@
+---
+# defaults file for cowrie
+cowrie_user: cowrie
+github_cowrie: http://github.com/cowrie/cowrie
+name_virtualenv: cowrie-env
+path_to_virtualenv: /home/{{cowrie_user}}/cowrie/{{name_virtualenv}}
+cowrie_path: /home/{{cowrie_user}}
+
+inventory_path: ./inventory/hosts.ini
+new_ssh_port: 2222
+
+cowrie_ssh: true 
+cowrie_telnet: true
+
+ssh_authbind_port: /etc/authbind/byport/22
+
+telnet_authbind_port: /etc/authbind/byport/23

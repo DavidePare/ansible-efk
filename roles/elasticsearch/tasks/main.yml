@@ -1,0 +1,72 @@
+---
+
+- include_tasks:
+    file: setup/creation_GroupUser.yml
+
+- include_tasks: 
+    file: elastic_download.yml
+
+
+- name: Fix Directory Permission
+  ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ elasticsearch_user }}"
+        group: "{{ elasticsearch_group }}"
+        recurse: yes
+        mode: u=rwX,g=rX,o-rwx 
+  loop:
+        - "{{ elasticsearch_data_dir }}"
+        - "{{ elasticsearch_log_dir }}"
+        - "{{ elasticsearch_pid_dir }}"
+        - "{{ elasticsearch_conf_dir }}"
+        - "{{ elasticsearch_certs_dir}}"
+        - "{{home_path}}"
+
+- name: Fix file elastic permission
+  ansible.builtin.file:
+    path: "{{elasticsearch_default_path}}"
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    mode: u=rwX,g=rX,o-rwx
+
+
+- name: Replace default elasticsearch.yml
+  template:
+    src: elasticsearch.yml.j2
+    dest: "{{ elasticsearch_extract_dir }}/elasticsearch.yml"
+    owner: "{{elasticsearch_user}}"
+    group: "{{elasticsearch_group}}"
+    mode: 0644
+
+# Xpack security configuration 
+
+- name: Generate the CA certificate
+  include_tasks:
+    file: security/generateCertificate.yml
+  when: 
+    - elasticsearch_security_enabled
+    - not elasticsearch_status.stat.exists
+
+- name: HTTPS Certificate
+  include_tasks:
+    file: security/generateHTTPS.yml
+  when: 
+    - elasticsearch_https_enabled
+    - not elasticsearch_status.stat.exists
+
+- name: Setup keystore
+  include_tasks:
+    file: setup/keystore_setup.yml
+  
+- name: Start elastic
+  include_tasks: 
+    file: enable_elastic.yml
+
+- name: Elastic User
+  include_tasks:
+    file: setup/elastic_users.yml
+  when: inventory_hostname in groups['elasticsearch_ca']
+
+
+
